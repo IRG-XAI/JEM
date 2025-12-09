@@ -126,28 +126,39 @@ def get_model_and_buffer(args, device, sample_q):
 
 
 def get_data(args):
-    if args.dataset == "svhn":
+    if args.dataset == "mnist":
         transform_train = tr.Compose(
-            [tr.Pad(4, padding_mode="reflect"),
-             tr.RandomCrop(im_sz),
-             tr.ToTensor(),
-             tr.Normalize((.5, .5, .5), (.5, .5, .5)),
+            [r.ToTensor(),
+             tr.Normalize((.5), (.5)),
+             lambda x: x + args.sigma * t.randn_like(x)]
+        transform_test = tr.Compose(
+            [tr.ToTensor(),
+             tr.Normalize((.5), (.5)),
              lambda x: x + args.sigma * t.randn_like(x)]
         )
     else:
-        transform_train = tr.Compose(
-            [tr.Pad(4, padding_mode="reflect"),
-             tr.RandomCrop(im_sz),
-             tr.RandomHorizontalFlip(),
-             tr.ToTensor(),
+        if args.dataset == "svhn":
+            transform_train = tr.Compose(
+                [tr.Pad(4, padding_mode="reflect"),
+                 tr.RandomCrop(im_sz),
+                 tr.ToTensor(),
+                 tr.Normalize((.5, .5, .5), (.5, .5, .5)),
+                 lambda x: x + args.sigma * t.randn_like(x)]
+            )
+        else:
+            transform_train = tr.Compose(
+                [tr.Pad(4, padding_mode="reflect"),
+                 tr.RandomCrop(im_sz),
+                 tr.RandomHorizontalFlip(),
+                 tr.ToTensor(),
+                 tr.Normalize((.5, .5, .5), (.5, .5, .5)),
+                 lambda x: x + args.sigma * t.randn_like(x)]
+            )
+        transform_test = tr.Compose(
+            [tr.ToTensor(),
              tr.Normalize((.5, .5, .5), (.5, .5, .5)),
              lambda x: x + args.sigma * t.randn_like(x)]
         )
-    transform_test = tr.Compose(
-        [tr.ToTensor(),
-         tr.Normalize((.5, .5, .5), (.5, .5, .5)),
-         lambda x: x + args.sigma * t.randn_like(x)]
-    )
     def dataset_fn(train, transform):
         if args.dataset:
             return tv.datasets.MNIST(root=args.data_root, transform=transform, download=True, train=train)
