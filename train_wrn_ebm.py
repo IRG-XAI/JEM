@@ -131,6 +131,7 @@ def get_data(args):
             [r.ToTensor(),
              tr.Normalize((.5), (.5)),
              lambda x: x + args.sigma * t.randn_like(x)]
+        )
         transform_test = tr.Compose(
             [tr.ToTensor(),
              tr.Normalize((.5), (.5)),
