@@ -159,7 +159,7 @@ def get_data(args):
              lambda x: x + args.sigma * t.randn_like(x)]
         )
     def dataset_fn(train, transform):
-        if args.dataset:
+        if args.dataset == "mnist":
             return tv.datasets.MNIST(root=args.data_root, transform=transform, download=True, train=train)
         elif args.dataset == "cifar10":
             return tv.datasets.CIFAR10(root=args.data_root, transform=transform, download=True, train=train)
