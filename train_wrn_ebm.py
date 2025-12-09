@@ -50,9 +50,9 @@ class DataSubset(Dataset):
 
 
 class F(nn.Module):
-    def __init__(self, depth=28, width=2, norm=None, dropout_rate=0.0, n_classes=10):
+    def __init__(self, depth=28, width=2, norm=None, dropout_rate=0.0, n_classes=10, input_channels=3):
         super(F, self).__init__()
-        self.f = wideresnet.Wide_ResNet(depth, width, norm=norm, dropout_rate=dropout_rate)
+        self.f = wideresnet.Wide_ResNet(depth, width, norm=norm, dropout_rate=dropout_rate, input_channels=input_channels)
         self.energy_output = nn.Linear(self.f.last_dim, 1)
         self.class_output = nn.Linear(self.f.last_dim, n_classes)
 
@@ -66,8 +66,8 @@ class F(nn.Module):
 
 
 class CCF(F):
-    def __init__(self, depth=28, width=2, norm=None, dropout_rate=0.0, n_classes=10):
-        super(CCF, self).__init__(depth, width, norm=norm, dropout_rate=dropout_rate, n_classes=n_classes)
+    def __init__(self, depth=28, width=2, norm=None, dropout_rate=0.0, n_classes=10 input_channels=3):
+        super(CCF, self).__init__(depth, width, norm=norm, dropout_rate=dropout_rate, n_classes=n_classes, input_channels=input_channels)
 
     def forward(self, x, y=None):
         logits = self.classify(x)
@@ -109,7 +109,7 @@ def init_random(args, bs):
 
 def get_model_and_buffer(args, device, sample_q):
     model_cls = F if args.uncond else CCF
-    f = model_cls(args.depth, args.width, args.norm, dropout_rate=args.dropout_rate, n_classes=args.n_classes)
+    f = model_cls(args.depth, args.width, args.norm, dropout_rate=args.dropout_rate, n_classes=args.n_classes, input_channels=args.input_channels)
     if not args.uncond:
         assert args.buffer_size % args.n_classes == 0, "Buffer size must be divisible by args.n_classes"
     if args.load_path is None:
@@ -149,7 +149,9 @@ def get_data(args):
          lambda x: x + args.sigma * t.randn_like(x)]
     )
     def dataset_fn(train, transform):
-        if args.dataset == "cifar10":
+        if args.dataset:
+            return tv.datasets.MNIST(root=args.data_root, transform=transform, download=True, train=train)
+        elif args.dataset == "cifar10":
             return tv.datasets.CIFAR10(root=args.data_root, transform=transform, download=True, train=train)
         elif args.dataset == "cifar100":
             return tv.datasets.CIFAR100(root=args.data_root, transform=transform, download=True, train=train)
@@ -398,7 +400,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Energy Based Models and Shit")
-    parser.add_argument("--dataset", type=str, default="cifar10", choices=["cifar10", "svhn", "cifar100"])
+    parser.add_argument("--dataset", type=str, default="cifar10", choices=["mnist", "cifar10", "svhn", "cifar100"])
     parser.add_argument("--data_root", type=str, default="../data")
     # optimization
     parser.add_argument("--lr", type=float, default=1e-4)
@@ -452,4 +454,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     args.n_classes = 100 if args.dataset == "cifar100" else 10
+    args.input_channels = 1 if args.dataset == 'mnist' else 3
     main(args)
