@@ -66,7 +66,7 @@ class F(nn.Module):
 
 
 class CCF(F):
-    def __init__(self, depth=28, width=2, norm=None, dropout_rate=0.0, n_classes=10 input_channels=3):
+    def __init__(self, depth=28, width=2, norm=None, dropout_rate=0.0, n_classes=10, input_channels=3):
         super(CCF, self).__init__(depth, width, norm=norm, dropout_rate=dropout_rate, n_classes=n_classes, input_channels=input_channels)
 
     def forward(self, x, y=None):
