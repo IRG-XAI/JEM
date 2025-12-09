@@ -128,7 +128,7 @@ def get_model_and_buffer(args, device, sample_q):
 def get_data(args):
     if args.dataset == "mnist":
         transform_train = tr.Compose(
-            [r.ToTensor(),
+            [tr.ToTensor(),
              tr.Normalize((.5), (.5)),
              lambda x: x + args.sigma * t.randn_like(x)]
         )
