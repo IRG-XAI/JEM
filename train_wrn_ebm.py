@@ -29,8 +29,6 @@ from tqdm import tqdm
 t.backends.cudnn.benchmark = True
 t.backends.cudnn.enabled = True
 seed = 1
-im_sz = 32
-n_ch = 3
 
 
 
@@ -104,7 +102,7 @@ def grad_vals(m):
 
 
 def init_random(args, bs):
-    return t.FloatTensor(bs, n_ch, im_sz, im_sz).uniform_(-1, 1)
+    return t.FloatTensor(bs, args.input_channels, args.image_size, args.image_size).uniform_(-1, 1)
 
 
 def get_model_and_buffer(args, device, sample_q):
@@ -141,7 +139,7 @@ def get_data(args):
         if args.dataset == "svhn":
             transform_train = tr.Compose(
                 [tr.Pad(4, padding_mode="reflect"),
-                 tr.RandomCrop(im_sz),
+                 tr.RandomCrop(args.image_size),
                  tr.ToTensor(),
                  tr.Normalize((.5, .5, .5), (.5, .5, .5)),
                  lambda x: x + args.sigma * t.randn_like(x)]
@@ -149,7 +147,7 @@ def get_data(args):
         else:
             transform_train = tr.Compose(
                 [tr.Pad(4, padding_mode="reflect"),
-                 tr.RandomCrop(im_sz),
+                 tr.RandomCrop(args.image_size),
                  tr.RandomHorizontalFlip(),
                  tr.ToTensor(),
                  tr.Normalize((.5, .5, .5), (.5, .5, .5)),
@@ -467,4 +465,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     args.n_classes = 100 if args.dataset == "cifar100" else 10
     args.input_channels = 1 if args.dataset == 'mnist' else 3
+    args.image_size = 28 if args.dataset == 'mnist' else 32
     main(args)
